@@ -12,8 +12,18 @@
     h2 { margin-top: 0; }
     button { padding: 10px 15px; background-color: #2a9d8f; color: white; border: none; border-radius: 8px; cursor: pointer; }
     button:hover { background-color: #21867a; }
+    .debug { background: #eee; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-size: 14px; color: #333; }
   </style>
   <script>
+    let debugLog = [];
+
+    function logDebug(message) {
+      debugLog.push(message);
+      const debugBox = document.getElementById("debug");
+      debugBox.innerText = debugLog.join('\n');
+      console.log(message);
+    }
+
     function createOrderForm(item) {
       const quantity = prompt("Введите количество:");
       if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
@@ -32,24 +42,31 @@
         phone: phone
       };
       if (window.Telegram && Telegram.WebApp) {
+        logDebug("✅ Telegram.WebApp доступен");
         Telegram.WebApp.sendData(JSON.stringify(order));
         alert("✅ Заказ отправлен. Менеджер скоро свяжется с вами.");
       } else {
-        alert("Ошибка: не запущено в Telegram.");
+        logDebug("❌ Telegram.WebApp НЕ доступен");
+        alert("❌ Не запущено в Telegram WebApp!");
       }
     }
 
     async function loadCatalog() {
       const res = await fetch("catalog.json");
       const data = await res.json();
-      const container = document.getElementById("catalog");
-
       window.catalogData = data;
       showFiltered("");
 
       document.getElementById("search").addEventListener("input", (e) => {
         showFiltered(e.target.value);
       });
+
+      // WebApp debug info
+      if (window.Telegram && Telegram.WebApp) {
+        logDebug("✅ Telegram WebApp обнаружен");
+      } else {
+        logDebug("❌ Telegram WebApp НЕ обнаружен при загрузке");
+      }
     }
 
     function showFiltered(filter) {
@@ -79,6 +96,7 @@
   </script>
 </head>
 <body>
+  <div id="debug" class="debug">🔍 WebApp отладка инициализации...</div>
   <h1>📦 Каталог запчастей</h1>
   <input type="text" id="search" placeholder="🔍 Поиск по названию или артикулу...">
   <div id="catalog"></div>
