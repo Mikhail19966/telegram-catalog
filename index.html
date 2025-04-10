@@ -2,125 +2,37 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Каталог запчастей</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin: 5px 0; }
-    .item { background: #fff; margin-bottom: 20px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .item img { max-width: 100px; float: right; margin-left: 10px; }
-    button { padding: 10px; background: #2a9d8f; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #21867a; }
-    .order-form { margin-top: 10px; display: none; }
-    #debug { background: #eee; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
-  </style>
+  <title>Тест WebApp</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    let debugLog = [];
-
-    function logDebug(message) {
-      debugLog.push(message);
-      document.getElementById("debug").innerText = debugLog.join("\n");
-      console.log(message);
-    }
-
     window.addEventListener("DOMContentLoaded", () => {
-      logDebug("🔍 Проверка Telegram WebApp при загрузке...");
       if (window.Telegram && Telegram.WebApp) {
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
-        logDebug("✅ Telegram WebApp инициализирован");
-        logDebug("Версия WebApp: " + Telegram.WebApp.version);
+        document.getElementById("status").innerText = "✅ Telegram WebApp работает!";
+        console.log("✅ WebApp инициализирован, версия:", Telegram.WebApp.version);
       } else {
-        logDebug("❌ Telegram WebApp не обнаружен при загрузке");
+        document.getElementById("status").innerText = "❌ Telegram WebApp не обнаружен";
+        console.log("❌ WebApp не обнаружен");
       }
     });
 
-    function toggleForm(id) {
-      const form = document.getElementById("form-" + id);
-      form.style.display = form.style.display === "block" ? "none" : "block";
-    }
-
-    function sendOrder(id) {
-      logDebug("🔍 Проверка Telegram WebApp перед отправкой...");
-      if (!window.Telegram || !Telegram.WebApp) {
-        logDebug("❌ Telegram WebApp недоступен перед отправкой");
+    function sendTest() {
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.sendData(JSON.stringify({ test: "Привет от теста!" }));
+        console.log("✅ Тест отправлен");
+        alert("✅ Тест отправлен!");
+      } else {
+        console.log("❌ WebApp недоступен");
         alert("❌ Не запущено в Telegram WebApp!");
-        return;
-      }
-
-      const quantity = document.getElementById("qty-" + id).value;
-      const phone = document.getElementById("phone-" + id).value;
-
-      if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-        logDebug("❌ Некорректное количество: " + quantity);
-        alert("Введите корректное количество (число больше 0).");
-        return;
-      }
-
-      if (!phone || phone.trim().length < 5) {
-        logDebug("❌ Некорректный телефон: " + phone);
-        alert("Введите корректный номер телефона (минимум 5 символов).");
-        return;
-      }
-
-      const item = window.catalogData.find(i => i.SKU === id);
-      const order = {
-        title: item.Title,
-        sku: item.SKU,
-        quantity: parseInt(quantity),
-        phone: phone.trim()
-      };
-
-      logDebug("Отправляем: " + JSON.stringify(order));
-      try {
-        Telegram.WebApp.sendData(JSON.stringify(order));
-        logDebug("✅ Данные отправлены");
-        alert("✅ Заказ отправлен!");
-      } catch (e) {
-        logDebug("❌ Ошибка при отправке: " + e.message);
-        alert("❌ Ошибка при отправке заказа: " + e.message);
       }
     }
-
-    async function loadCatalog() {
-      try {
-        const res = await fetch("catalog.json");
-        if (!res.ok) throw new Error("HTTP ошибка: " + res.status);
-        const data = await res.json();
-        window.catalogData = data;
-
-        const container = document.getElementById("catalog");
-        data.forEach(item => {
-          const block = document.createElement("div");
-          block.className = "item";
-          block.innerHTML = `
-            ${item.Photo ? `<img src="${item.Photo}" alt="Фото">` : ""}
-            <h2>${item.Title}</h2>
-            <p>Артикул: ${item.SKU}</p>
-            <p>Цена: ${item.Price} руб.</p>
-            <p>В наличии: ${item.Quantity} шт.</p>
-            <p>${item.Text}</p>
-            <button onclick='toggleForm("${item.SKU}")'>🛒 Заказать</button>
-            <div id="form-${item.SKU}" class="order-form">
-              <input type="number" id="qty-${item.SKU}" placeholder="Количество" min="1">
-              <input type="text" id="phone-${item.SKU}" placeholder="Номер телефона">
-              <button onclick='sendOrder("${item.SKU}")'>📦 Отправить</button>
-            </div>
-          `;
-          container.appendChild(block);
-        });
-      } catch (e) {
-        logDebug("❌ Ошибка загрузки каталога: " + e.message);
-        alert("Не удалось загрузить каталог: " + e.message);
-      }
-    }
-
-    window.onload = loadCatalog;
   </script>
 </head>
 <body>
-  <div id="debug">🔍 Лог отладки...</div>
-  <h1>📦 Каталог запчастей</h1>
-  <div id="catalog"></div>
+  <h1>Тест Telegram WebApp</h1>
+  <div id="status">🔍 Проверка...</div>
+  <button onclick="sendTest()">Отправить тест</button>
 </body>
 </html>
 
