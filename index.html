@@ -21,7 +21,7 @@
       debugLog.push(message);
       const debugBox = document.getElementById("debug");
       if (debugBox) {
-        debugBox.innerText = debugLog.join('\\n');
+        debugBox.innerText = debugLog.join('\n');
       }
       console.log(message);
     }
@@ -65,8 +65,10 @@
       };
 
       if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
         Telegram.WebApp.sendData(JSON.stringify(order));
-        alert("✅ Заказ отправлен. Менеджер скоро свяжется с вами.");
+        alert("✅ Заказ отправлен. Перейдите в Telegram, чтобы подтвердить его.");
       } else {
         alert("❌ Не запущено в Telegram WebApp!");
       }
@@ -121,6 +123,7 @@
   <div id="catalog"></div>
 </body>
 </html>
+
 
 
 
