@@ -71,26 +71,10 @@
         if (!res.ok) throw new Error("Ошибка загрузки: " + res.status);
         const data = await res.json();
         window.catalogData = data;
+        showFiltered(""); // Показываем все товары при загрузке
 
-        const container = document.getElementById("catalog");
-        data.forEach(item => {
-          const block = document.createElement("div");
-          block.className = "item";
-          block.innerHTML = `
-            ${item.Photo ? `<img src="${item.Photo}" alt="Фото">` : ""}
-            <h2>${item.Title}</h2>
-            <p>Артикул: ${item.SKU}</p>
-            <p>Цена: ${item.Price} руб.</p>
-            <p>В наличии: ${item.Quantity} шт.</p>
-            <p>${item.Text}</p>
-            <button onclick='toggleForm("${item.SKU}")'>🛒 Заказать</button>
-            <div id="form-${item.SKU}" class="order-form">
-              <input type="number" id="qty-${item.SKU}" placeholder="Количество" min="1">
-              <input type="text" id="phone-${item.SKU}" placeholder="Номер телефона">
-              <button onclick='sendOrder("${item.SKU}")'>📦 Отправить</button>
-            </div>
-          `;
-          container.appendChild(block);
+        document.getElementById("search").addEventListener("input", (e) => {
+          showFiltered(e.target.value);
         });
       } catch (e) {
         console.log("Ошибка загрузки каталога:", e);
@@ -98,10 +82,44 @@
       }
     }
 
+    function showFiltered(filter) {
+      const container = document.getElementById("catalog");
+      container.innerHTML = "";
+      const filtered = window.catalogData.filter(item =>
+        item.Title.toLowerCase().includes(filter.toLowerCase()) ||
+        item.SKU.toLowerCase().includes(filter.toLowerCase())
+      );
+      filtered.forEach(item => {
+        const block = document.createElement("div");
+        block.className = "item";
+        block.innerHTML = `
+          ${item.Photo ? `<img src="${item.Photo}" alt="Фото">` : ""}
+          <h2>${item.Title}</h2>
+          <p>Артикул: ${item.SKU}</p>
+          <p>Цена: ${item.Price} руб.</p>
+          <p>В наличии: ${item.Quantity} шт.</p>
+          <p>${item.Text}</p>
+          <button onclick='toggleForm("${item.SKU}")'>🛒 Заказать</button>
+          <div id="form-${item.SKU}" class="order-form">
+            <input type="number" id="qty-${item.SKU}" placeholder="Количество" min="1">
+            <input type="text" id="phone-${item.SKU}" placeholder="Номер телефона">
+            <button onclick='sendOrder("${item.SKU}")'>📦 Отправить</button>
+          </div>
+        `;
+        container.appendChild(block);
+      });
+    }
+
     window.onload = loadCatalog;
   </script>
 </head>
 <body>
+  <div id="debug">🔍 Проверка...</div>
+  <h1>📦 Каталог запчастей</h1>
+  <input type="text" id="search" placeholder="🔍 Поиск по названию или артикулу...">
+  <div id="catalog"></div>
+</body>
+</html>
   <div id="debug">🔍 Проверка...</div>
   <h1>📦 Каталог запчастей</h1>
   <div id="catalog"></div>
