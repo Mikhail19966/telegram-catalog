@@ -17,39 +17,48 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    
-    window.Telegram.WebApp.ready();
-
-    async function loadCatalog() {
-      const res = await fetch('catalog.json');
-      const data = await res.json();
-      const container = document.getElementById('catalog');
-
-      data.forEach(item => {
-        const block = document.createElement('div');
-        block.className = 'item';
-        block.innerHTML = `
-          ${item.Photo ? `<img src="${item.Photo}" alt="Фото">` : ''}
-          <h2>${item.Title}</h2>
-          <p><strong>Артикул:</strong> ${item.SKU}</p>
-          <p><strong>Цена:</strong> ${item.Price} руб.</p>
-          <p><strong>В наличии:</strong> ${item.Quantity} шт.</p>
-          <p>${item.Text}</p>
-          <button class="order-btn" onclick="orderItem('${item.SKU}', '${item.Title}', ${item.Price})">Заказать</button>
-        `;
-        container.appendChild(block);
-      });
+    // Проверка загрузки Telegram Web App
+    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+      Telegram.WebApp.ready();
+      console.log("Telegram WebApp готов");
+    } else {
+      console.log("Telegram WebApp не загружен");
     }
 
-    
+    async function loadCatalog() {
+      try {
+        const res = await fetch('catalog.json');
+        if (!res.ok) throw new Error('Не удалось загрузить catalog.json');
+        const data = await res.json();
+        const container = document.getElementById('catalog');
+
+        data.forEach(item => {
+          const block = document.createElement('div');
+          block.className = 'item';
+          block.innerHTML = `
+            ${item.Photo ? `<img src="${item.Photo}" alt="Фото">` : ''}
+            <h2>${item.Title}</h2>
+            <p><strong>Артикул:</strong> ${item.SKU}</p>
+            <p><strong>Цена:</strong> ${item.Price} руб.</p>
+            <p><strong>В наличии:</strong> ${item.Quantity} шт.</p>
+            <p>${item.Text}</p>
+            <button class="order-btn" onclick="orderItem('${item.SKU}', '${item.Title}', ${item.Price})">Заказать</button>
+          `;
+          container.appendChild(block);
+        });
+      } catch (error) {
+        console.error("Ошибка загрузки каталога:", error);
+      }
+    }
+
     function orderItem(sku, title, price) {
       const orderData = {
         sku: sku,
         title: title,
         price: price,
-        quantity: 1 // 
+        quantity: 1
       };
-      window.Telegram.WebApp.sendData(JSON.stringify(orderData));
+      Telegram.WebApp.sendData(JSON.stringify(orderData));
     }
 
     loadCatalog();
