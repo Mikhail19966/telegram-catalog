@@ -26,6 +26,16 @@
       console.log(message);
     }
 
+    window.addEventListener("DOMContentLoaded", () => {
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        logDebug("✅ Telegram WebApp форсированно инициализирован");
+      } else {
+        logDebug("❌ Telegram WebApp НЕ обнаружен при DOMContentLoaded");
+      }
+    });
+
     function toggleForm(id) {
       const form = document.getElementById("form-" + id);
       form.style.display = form.style.display === "block" ? "none" : "block";
@@ -55,13 +65,9 @@
       };
 
       if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
-        logDebug("✅ Telegram.WebApp доступен");
         Telegram.WebApp.sendData(JSON.stringify(order));
         alert("✅ Заказ отправлен. Менеджер скоро свяжется с вами.");
       } else {
-        logDebug("❌ Telegram.WebApp НЕ доступен");
         alert("❌ Не запущено в Telegram WebApp!");
       }
     }
@@ -75,14 +81,6 @@
       document.getElementById("search").addEventListener("input", (e) => {
         showFiltered(e.target.value);
       });
-
-      if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
-        logDebug("✅ Telegram WebApp обнаружен и инициализирован");
-      } else {
-        logDebug("❌ Telegram WebApp НЕ обнаружен при загрузке");
-      }
     }
 
     function showFiltered(filter) {
