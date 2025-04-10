@@ -5,12 +5,13 @@
   <title>Каталог запчастей</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    input[type="text"] { width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin: 5px 0; font-size: 14px; }
     .item { background: #fff; margin-bottom: 20px; padding: 15px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); position: relative; }
     .item img { max-width: 100px; border-radius: 8px; float: right; margin-left: 10px; }
     h2 { margin-top: 0; }
     button { padding: 10px 15px; background-color: #2a9d8f; color: white; border: none; border-radius: 8px; cursor: pointer; }
     button:hover { background-color: #21867a; }
+    .order-form { margin-top: 10px; display: none; }
     .debug { background: #eee; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-size: 14px; color: #333; }
   </style>
   <script>
@@ -25,19 +26,26 @@
       console.log(message);
     }
 
-    function createOrderForm(item) {
-      const quantity = prompt("Введите количество:");
+    function toggleForm(id) {
+      const form = document.getElementById("form-" + id);
+      form.style.display = form.style.display === "block" ? "none" : "block";
+    }
+
+    function sendOrder(id) {
+      const quantity = document.getElementById("qty-" + id).value;
+      const phone = document.getElementById("phone-" + id).value;
+
       if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-        alert("Некорректное количество.");
+        alert("Введите корректное количество.");
         return;
       }
 
-      const phone = prompt("Введите ваш номер телефона:");
       if (!phone || phone.length < 5) {
         alert("Введите корректный номер телефона.");
         return;
       }
 
+      const item = window.catalogData.find(i => i.SKU === id);
       const order = {
         title: item.Title,
         sku: item.SKU,
@@ -94,7 +102,12 @@
           <p><strong>Цена:</strong> ${item.Price} руб.</p>
           <p><strong>В наличии:</strong> ${item.Quantity} шт.</p>
           <p>${item.Text}</p>
-          <button onclick='createOrderForm(${JSON.stringify(item)})'>🛒 Заказать</button>
+          <button onclick='toggleForm("${item.SKU}")'>🛒 Заказать</button>
+          <div id="form-${item.SKU}" class="order-form">
+            <input type="number" id="qty-${item.SKU}" placeholder="Количество">
+            <input type="text" id="phone-${item.SKU}" placeholder="Номер телефона">
+            <button onclick='sendOrder("${item.SKU}")'>📦 Отправить заказ</button>
+          </div>
         `;
         container.appendChild(block);
       });
@@ -110,4 +123,5 @@
   <div id="catalog"></div>
 </body>
 </html>
+
 
