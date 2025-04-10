@@ -25,12 +25,13 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+      logDebug("🔍 Проверка Telegram WebApp...");
       if (window.Telegram && Telegram.WebApp) {
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
         logDebug("✅ Telegram WebApp инициализирован");
       } else {
-        logDebug("❌ Telegram WebApp не обнаружен");
+        logDebug("❌ Telegram WebApp не обнаружен. Убедитесь, что открыли через Telegram.");
       }
     });
 
@@ -41,9 +42,10 @@
 
     function sendOrder(id) {
       const quantityInput = document.getElementById("qty-" + id);
-      const phoneInput = document.getElementById("phone-" + id);
+      const phoneInput = document.getElement说的那样Input = document.getElementById("phone-" + id);
 
       if (!quantityInput || !phoneInput) {
+        logDebug("❌ Ошибка: поля ввода не найдены");
         alert("Ошибка: поля ввода не найдены.");
         return;
       }
@@ -52,17 +54,20 @@
       const phone = phoneInput.value;
 
       if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
+        logDebug("❌ Некорректное количество: " + quantity);
         alert("Введите корректное количество (число больше 0).");
         return;
       }
 
       if (!phone || phone.trim().length < 5) {
+        logDebug("❌ Некорректный телефон: " + phone);
         alert("Введите корректный номер телефона (минимум 5 символов).");
         return;
       }
 
       const item = window.catalogData.find(i => i.SKU === id);
       if (!item) {
+        logDebug("❌ Товар не найден: " + id);
         alert("Ошибка: товар не найден.");
         return;
       }
@@ -77,26 +82,32 @@
 
       logDebug(`Отправляем заказ: ${JSON.stringify(order)}`);
       if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
-        Telegram.WebApp.sendData(JSON.stringify(order));
-        logDebug("✅ Данные отправлены в Telegram");
-        alert("✅ Заказ отправлен. Перейдите в Telegram, чтобы подтвердить его.");
+        try {
+          Telegram.WebApp.ready();
+          Telegram.WebApp.expand();
+          Telegram.WebApp.sendData(JSON.stringify(order));
+          logDebug("✅ Данные отправлены в Telegram");
+          alert("✅ Заказ отправлен. Перейдите в Telegram, чтобы подтвердить его.");
+        } catch (e) {
+          logDebug("❌ Ошибка отправки данных: " + e.message);
+          alert("❌ Ошибка при отправке заказа: " + e.message);
+        }
       } else {
         logDebug("❌ Telegram WebApp недоступен");
-        alert("❌ Не запущено в Telegram WebApp!");
+        alert("❌ Не запущено в Telegram WebApp! Откройте через Telegram.");
       }
     }
 
     async function loadCatalog() {
       try {
         const res = await fetch("catalog.json");
+        if (!res.ok) throw new Error("Ошибка загрузки: " + res.status);
         const data = await res.json();
         window.catalogData = data;
         showFiltered("");
       } catch (e) {
-        logDebug(`❌ Ошибка загрузки каталога: ${e}`);
-        alert("Не удалось загрузить каталог. Проверьте подключение.");
+        logDebug(`❌ Ошибка загрузки каталога: ${e.message}`);
+        alert("Не удалось загрузить каталог: " + e.message);
       }
 
       document.getElementById("search").addEventListener("input", (e) => {
